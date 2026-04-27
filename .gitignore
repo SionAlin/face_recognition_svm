@@ -1,0 +1,11 @@
+# Java build
+*.class
+bin/
+
+# features
+*.hog
+*.model
+
+# data
+data/
+resources/*
