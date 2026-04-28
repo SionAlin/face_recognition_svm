@@ -97,7 +97,7 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
                 labels[facesHOG.length + i] = -1;
             }
 
-            SMO smo = new SMO(0.6, 1e-3, 200, 1e-4, 0.0);
+            SMO smo = new SMO(0.3, 1e-3, 200, 1e-4, 0.0);
 
             feedbackTextArea.append("Training model ... \n");
             headDetector = smo.train(allHOG, labels, "head_detector");
@@ -105,7 +105,7 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
             feedbackTextArea.append("Head detector trained!\n");
             headDetector.save("/home/sion/Documents/Portofoliu/face_recognition_svm/data/face_models/head_detector.model");
 
-            feedbackTextArea.append("Done!");
+            feedbackTextArea.append("Done!\n");
             }).start();
         }
         if(event.getSource() == trainFaceRecognitionButton){
