@@ -4,7 +4,9 @@ import hog.*;
 import svm.*;
 import java.io.*;
 import java.util.*;
+import java.util.Comparator;
 import java.awt.*;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.awt.image.*;
 import org.opencv.core.*;
@@ -25,8 +27,11 @@ public class CameraPanel extends Panel implements Runnable{
     private Image image;
     private Graphics graphics;
     private Thread thread;
+    private HOG hog = new HOG();
 
     public CameraPanel(MainFrame mainFrame){
+        this.detections = new ArrayList<>();
+
         this.mainFrame = mainFrame;
         this.setLayout(null);
 
@@ -47,41 +52,116 @@ public class CameraPanel extends Panel implements Runnable{
 
     @Override
     public void run(){
-        while(true){
-            videoCapture.read(frame);
-            if(!frame.empty()){
-                detections = slidingWindow(frame);
+        while(!Thread.currentThread().isInterrupted()){
+            if(videoCapture != null && !frame.empty() && videoCapture.read(frame)){
+
+                ArrayList<Object[]> tempDetection = slidingWindow(frame);
+
+                synchronized(this){
+                    detections = tempDetection;
+                }
                 repaint();
             }
             try{
-                Thread.sleep(100);
+                Thread.sleep(200);
             }catch(InterruptedException e){
+                Thread.currentThread().interrupt();
                 break;
             }
         }
     }
 
     private ArrayList<Object[]> slidingWindow(Mat mat){
-        int width = mat.width();
-        int height = mat.height();
+        int width = mat.cols();
+        int height = mat.rows();
+        int step = 40;
 
-        int step = 64;
+        java.util.List<Rectangle> rects = new java.util.ArrayList<>();
+        java.util.List<double[]> hogVecs = new java.util.ArrayList<>();
 
-        detections = new ArrayList<>();
-        HOG hog = new HOG();
+        Mat window;
+        BufferedImage img;
+        double[] hogVec;
 
-        for(int i = 0; i + 128 < height; i+=step){
-            for(int j = 0; j + 128 < width; j+=step){
-                Mat window = mat.submat(i, i+128, j, j+128);
-                BufferedImage img = matToBufferedImage(window);
-                double[] hogVec = hog.computeHOG(img);
+        for(int i = 0; i <= height - 128; i+=step){
+            for(int j = 0; j <= width - 128; j+=step){
+                window = mat.submat(i, i+128, j, j+128);
+                img = matToBufferedImage(window);
+                hogVec = hog.computeHOG(img);
                 if(headDetector != null && headDetector.predict(hogVec) == 1){
-                    detections.add(new Object[]{j, i, 128, 128, hogVec});
+                    rects.add(new Rectangle(j, i, 128, 128));
+                    hogVecs.add(hogVec);
                 }
+                window.release();
             }
         }
-        return detections;
+
+        if(rects.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        java.util.List<java.util.List<Integer>> groups = new java.util.ArrayList<>();
+        boolean[] used = new boolean[rects.size()];
+
+        for(int i = 0; i < rects.size(); i++){
+            if(!used[i]){
+                java.util.List<Integer> group = new java.util.ArrayList<>();
+                java.util.Queue<Integer> queue = new java.util.LinkedList<>();
+                queue.add(i);
+                used[i] = true;
+                while(!queue.isEmpty()){
+                    int curr = queue.poll();
+                    group.add(curr);
+                    Rectangle rCurr = rects.get(curr);
+                    for(int j = 0; j < rects.size(); j++){
+                        if(!used[j]){
+                            Rectangle rJ = rects.get(j);
+                            if(calculateIoU(rCurr, rJ) > 0.5){
+                                used[j] = true;
+                                queue.add(j);
+                            }
+                        }
+                    }
+                }
+                groups.add(group);
+            }
+        }
+
+        java.util.List<Integer> bestGroup = groups.stream().max(Comparator.comparingInt(java.util.List::size)).orElse(java.util.Collections.emptyList());
+        if(bestGroup.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        int sumX = 0, sumY = 0;
+        for(int idx : bestGroup){
+            Rectangle r = rects.get(idx);
+            sumX += r.x;
+            sumY += r.y;
+        }
+        int avgX = sumX / bestGroup.size();
+        int avgY = sumY / bestGroup.size();
+
+        double[] bestHog = hogVecs.get(bestGroup.get(0));
+
+        ArrayList<Object[]> result = new ArrayList<>();
+        result.add(new Object[]{avgX, avgY, 128, 128, bestHog});
+        return result;
     }
+
+    private double calculateIoU(Rectangle r1, Rectangle r2){
+        int xA = Math.max(r1.x, r2.x);
+        int yA = Math.max(r1.y, r2.y);
+
+        int xB = Math.min(r1.x + r1.width, r2.x + r2.width);
+        int yB = Math.min(r1.y + r1.height, r2.y + r2.height);
+
+        int interArea = Math.max(0, xB - xA) * Math.max(0, yB - yA);
+        int area1 = r1.width * r1.height;
+        int area2 = r2.width * r2.height;
+
+        return (double) interArea / (area1 + area2 - interArea);
+    }
+
 
     public void update(Graphics g){
         Image buffer = createImage(getWidth(), getHeight());
@@ -92,22 +172,30 @@ public class CameraPanel extends Panel implements Runnable{
     }
 
     public void paint(Graphics g){
-        for(Object[] det : detections){
-            int x = (int)det[0];
-            int y = (int)det[1];
-            double[] hog = (double[])det[4];
-            Imgproc.rectangle(frame, new org.opencv.core.Point(x, y), new org.opencv.core.Point(x+128, y+128), new Scalar(96,16,8), 2);
-            if(recognizer != null){
-                for(SVMClassifier clf : recognizer){
-                    if(clf.predict(hog) == 1){
-                        Imgproc.putText(frame, clf.personName, new org.opencv.core.Point(x, y-10), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(96,16,8), 2);
-                        break;
+        if(frame == null || frame.empty()) return;
+
+        Mat display = frame.clone();
+        synchronized(this){
+            if(detections.size() > 0 && detections != null){
+                Object[] det = detections.get(0);
+                int x = (int)det[0];
+                int y = (int)det[1];
+                System.out.println("x = " + x + "\ny = " + y);
+                double[] hog = (double[])det[4];
+                Imgproc.rectangle(display, new org.opencv.core.Point(x, y), new org.opencv.core.Point(x+128, y+128), new Scalar(96,16,8), 2);
+                if(recognizer != null){
+                    for(SVMClassifier clf : recognizer){
+                        if(clf.predict(hog) == 1){
+                            Imgproc.putText(display, clf.personName, new org.opencv.core.Point(x, y-10), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(96,16,8), 2);
+                            break;
+                        }
                     }
                 }
             }
         }
-        if(frame != null && !frame.empty())
-            g.drawImage(matToImage(frame), 30, 60, getWidth()-60, getHeight()-90, this);
+
+        g.drawImage(matToImage(display), 30, 60, getWidth()-60, getHeight()-90, this);
+        display.release();
     }
 
     private BufferedImage matToBufferedImage(Mat mat){
