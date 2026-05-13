@@ -75,8 +75,8 @@ src/
 - Run `PreProcessingData.java` to rescale all images to 128x128:
 ```
 bash
-javac src/core/PreProcessingData.java
-java -cp src/core PreProcessingData
+javac PreProcessingData.java
+java PreProcessingData
 ```
 This creates `data/raw/faces/` and `data/raw/non_faces/` with rescaled images.
  
