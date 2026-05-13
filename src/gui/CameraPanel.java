@@ -55,11 +55,16 @@ public class CameraPanel extends Panel implements Runnable{
         while(!Thread.currentThread().isInterrupted()){
             if(videoCapture != null && !frame.empty() && videoCapture.read(frame)){
 
-                ArrayList<Object[]> tempDetection = slidingWindow(frame);
+                Mat smallFrame = new Mat();
+                Size sz = new Size(320, 240);
+                Imgproc.resize(frame, smallFrame, sz);
+
+                ArrayList<Object[]> tempDetection = slidingWindow(smallFrame);
 
                 synchronized(this){
                     detections = tempDetection;
                 }
+                smallFrame.release();
                 repaint();
             }
             try{
@@ -173,20 +178,18 @@ public class CameraPanel extends Panel implements Runnable{
 
     public void paint(Graphics g){
         if(frame == null || frame.empty()) return;
-
         Mat display = frame.clone();
         synchronized(this){
             if(detections.size() > 0 && detections != null){
                 Object[] det = detections.get(0);
                 int x = (int)det[0];
                 int y = (int)det[1];
-                System.out.println("x = " + x + "\ny = " + y);
                 double[] hog = (double[])det[4];
-                Imgproc.rectangle(display, new org.opencv.core.Point(x, y), new org.opencv.core.Point(x+128, y+128), new Scalar(96,16,8), 2);
+                Imgproc.rectangle(display, new org.opencv.core.Point(x, y), new org.opencv.core.Point(x+100, y+100), new Scalar(96,16,8), 1);
                 if(recognizer != null){
                     for(SVMClassifier clf : recognizer){
                         if(clf.predict(hog) == 1){
-                            Imgproc.putText(display, clf.personName, new org.opencv.core.Point(x, y-10), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(96,16,8), 2);
+                            Imgproc.putText(display, clf.personName, new org.opencv.core.Point(x+1, y+95), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(96,16,8), 1);
                             break;
                         }
                     }
@@ -247,9 +250,11 @@ public class CameraPanel extends Panel implements Runnable{
                 recognizer.add(clf);
             }
         }
-
+        //System.out.println("Support vectors: " + headDetector.supportVectors.length);
         if(!videoCapture.isOpened())
             videoCapture.open(0);
+            videoCapture.set(3, 320);
+            videoCapture.set(4, 240);
 
         thread = new Thread(this);
         thread.start();

@@ -5,6 +5,8 @@ import java.io.*;
 
 public class SVMClassifier implements Serializable{
 
+    private static final long serialVersionUID = 1L;
+
     double gamma, coef0;
     double[][] supportVectors;
     int[] svLabels;

@@ -34,12 +34,12 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
         this.add(label);
 
         this.extractHOGButton = new CustomButton("Extract HOG");
-        this.extractHOGButton.setBounds(20, 60, 685, 50);
+        this.extractHOGButton.setBounds(20, 465, 1360, 50);
         this.extractHOGButton.addActionListener(this);
         this.add(this.extractHOGButton);
 
         this.trainFaceDetectorButton = new CustomButton("Train Face Detector");
-        this.trainFaceDetectorButton.setBounds(20, 320, 685, 50);
+        this.trainFaceDetectorButton.setBounds(20, 525, 1360, 50);
         this.trainFaceDetectorButton.addActionListener(this);
         this.add(this.trainFaceDetectorButton);
 
@@ -49,7 +49,7 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
         this.add(this.trainFaceRecognitionButton);
 
         this.feedbackTextArea = new CustomTextArea("");
-        this.feedbackTextArea.setBounds(715, 60, 660, 515);
+        this.feedbackTextArea.setBounds(20, 60, 1360, 395);
         this.add(this.feedbackTextArea);
 
     }

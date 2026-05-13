@@ -12,6 +12,8 @@ public class SMO{
     double[] alpha;
     double b;
     Random rand;
+    private double[][] kernelCache;
+    private boolean[][] cached;
 
     public SMO(double C, double tol, int maxIter, double gamma, double coef0){
         this.C = C;
@@ -31,11 +33,15 @@ public class SMO{
         int svCount;
         classifier = new SVMClassifier(gamma, coef0, personName);
         alpha = new double[n];
+        kernelCache = new double[n][n];
+        cached = new boolean[n][n];
         b = 0;
 
         while(k < maxIter){
             numChanged = 0;
+            System.out.println(k +  " k/ " +  maxIter + " maxIter");
             for(int i = 0; i < n; i++){
+                System.out.println(i + " / " + (n-1) + " (" + k + " k)");
                 if(examineExample(i))
                     numChanged++;
             }
@@ -152,7 +158,14 @@ public class SMO{
     }
 
     private double kernelValue(int i, int j){
-        return classifier.kernel(x[i],x[j]);
+
+        if(cached[i][j]) return kernelCache[i][j];
+
+        double val = classifier.kernel(x[i],x[j]);
+        kernelCache[i][j] = val;
+        kernelCache[j][i] = val;
+        cached[i][j] = cached[j][i] = true;
+        return val;
     }
 
 }
