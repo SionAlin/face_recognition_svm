@@ -55,7 +55,7 @@ src/
 
 
 ### Sliding Window + NMS
-- 128x128 window sliding over camera frame with step=32
+- 128x128 window sliding over camera frame
 - HOG extracted per window, classified by head detector SVM
 - IoU-based grouping of overlapping detections
 - Best group selected by density (most overlapping windows)
