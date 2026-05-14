@@ -5,6 +5,7 @@ bin/
 # features
 *.hog
 *.model
+*.log
 
 # data
 data/
