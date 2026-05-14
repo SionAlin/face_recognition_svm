@@ -5,8 +5,8 @@ import javax.imageio.ImageIO;
 public class PreProcessingData{
     public static void main(String[] args){
         try{
-            File inputDir = new File("/home/sion/Documents/Portofoliu/face_recognition_svm/data/raw/Humans/");
-            File outputDir = new File("/home/sion/Documents/Portofoliu/face_recognition_svm/data/raw/faces/");
+            File inputDir = new File("../../data/raw/Humans/");
+            File outputDir = new File("../../data/raw/faces/");
             outputDir.mkdirs();
 
             File[] files = inputDir.listFiles(File::isFile);
@@ -26,8 +26,8 @@ public class PreProcessingData{
             }
             System.out.println("Done! " + count + " humans images processed.");
 
-            inputDir = new File("/home/sion/Documents/Portofoliu/face_recognition_svm/data/raw/archive/");
-            outputDir = new File("/home/sion/Documents/Portofoliu/face_recognition_svm/data/raw/non_faces/");
+            inputDir = new File("../../data/raw/archive/");
+            outputDir = new File("../../data/raw/non_faces/");
             outputDir.mkdirs();
 
             files = inputDir.listFiles(File::isFile);

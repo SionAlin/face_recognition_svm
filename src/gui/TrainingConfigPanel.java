@@ -58,7 +58,7 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
     public void actionPerformed(ActionEvent event){
         if(event.getSource() == extractHOGButton){
             new Thread(() -> {
-                File rawDir = new File("/home/sion/Documents/Portofoliu/face_recognition_svm/data/raw/");
+                File rawDir = new File("./data/raw/");
                 File[] persons = rawDir.listFiles(File::isDirectory);
 
                 for(File person : persons){
@@ -80,8 +80,8 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
             extractHOG("non_faces");
             feedbackTextArea.append("Done!\n");
 
-            double[][] facesHOG = Read("/home/sion/Documents/Portofoliu/face_recognition_svm/data/hog_training/faces.hog");
-            double[][] nonFacesHOG = Read("/home/sion/Documents/Portofoliu/face_recognition_svm/data/hog_training/non_faces.hog");
+            double[][] facesHOG = Read("./data/hog_training/faces.hog");
+            double[][] nonFacesHOG = Read("./data/hog_training/non_faces.hog");
 
             int total = facesHOG.length + nonFacesHOG.length;
             double[][] allHOG = new double[total][];
@@ -103,7 +103,7 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
             headDetector = smo.train(allHOG, labels, "head_detector");
 
             feedbackTextArea.append("Head detector trained!\n");
-            headDetector.save("/home/sion/Documents/Portofoliu/face_recognition_svm/data/face_models/head_detector.model");
+            headDetector.save("./data/face_models/head_detector.model");
 
             feedbackTextArea.append("Done!\n");
             }).start();
@@ -111,7 +111,7 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
         if(event.getSource() == trainFaceRecognitionButton){
             new Thread(() -> {
                 feedbackTextArea.append("Reading... \n");
-                File rawDir = new File("/home/sion/Documents/Portofoliu/face_recognition_svm/data/hog_training/");
+                File rawDir = new File("./data/hog_training/");
                 File[] persons = rawDir.listFiles(File::isFile);
 
                 for(File person : persons){
@@ -157,7 +157,7 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
                     personClf = smo.train(allHOG, labels, name);
 
                     feedbackTextArea.append(name + " model trained!\n");
-                    personClf.save("/home/sion/Documents/Portofoliu/face_recognition_svm/data/face_models/" + name + ".model");
+                    personClf.save("./data/face_models/" + name + ".model");
 
                     feedbackTextArea.append("Done " + name + "!\n");
                 }
@@ -167,8 +167,8 @@ public class TrainingConfigPanel extends Panel implements ActionListener{
 
     private void extractHOG(String name){
         try {
-            String pathFrom = "/home/sion/Documents/Portofoliu/face_recognition_svm/data/raw/" + name;
-            String pathTo = "/home/sion/Documents/Portofoliu/face_recognition_svm/data/hog_training/";
+            String pathFrom = "./data/raw/" + name;
+            String pathTo = "./data/hog_training/";
 
             File dir = new File(pathFrom);
             File[] files = dir.listFiles(File::isFile);

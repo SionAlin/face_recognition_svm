@@ -235,11 +235,11 @@ public class CameraPanel extends Panel implements Runnable{
 
     public void startCamera(){
 
-        File modelFile = new File("data/face_models/head_detector.model");
+        File modelFile = new File("./data/face_models/head_detector.model");
         if(modelFile.exists())
-            headDetector = SVMClassifier.load("data/face_models/head_detector.model");
+            headDetector = SVMClassifier.load("./data/face_models/head_detector.model");
 
-        File modelDir = new File("data/face_models/");
+        File modelDir = new File("./data/face_models/");
         if(modelDir.exists()){
             File[] modelFiles = modelDir.listFiles(File::isFile);
             recognizer = new ArrayList<>();

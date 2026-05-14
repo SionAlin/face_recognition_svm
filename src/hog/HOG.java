@@ -189,7 +189,7 @@ public class HOG{
 
     public BufferedImage Read(){
         try{
-            BufferedImage img = ImageIO.read(new File("/home/sion/Documents/Portofoliu/face_recognition_svm/resources/image.jpg"));
+            BufferedImage img = ImageIO.read(new File("./resources/image.jpg"));
             System.out.println("Image uploaded!");
             return img;
         }catch(IOException e){
@@ -200,7 +200,7 @@ public class HOG{
 
     public void Write(BufferedImage aux, String nume){
         try{
-            File out = new File("/home/sion/Documents/Portofoliu/face_recognition_svm/resources/" + nume + ".jpg");
+            File out = new File("./resources/" + nume + ".jpg");
             ImageIO.write(aux, "png", out);
             System.out.println("Image saved!");
         }catch(IOException e){

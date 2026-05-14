@@ -89,7 +89,7 @@ public class LearningSetPanel extends Panel implements Runnable, ActionListener{
         this.add(takePictureButton);
 
         try{
-            this.defaultImage = ImageIO.read(new File("/home/sion/Documents/Portofoliu/face_recognition_svm/resources/default.jpg"));
+            this.defaultImage = ImageIO.read(new File("./resources/default.jpg"));
         }catch(IOException e){
             e.printStackTrace();
         }
@@ -144,7 +144,7 @@ public class LearningSetPanel extends Panel implements Runnable, ActionListener{
                 takePictureButton.setEnabled(true);
                 savedImages.clear();
                 currentIndex = 0;
-                new File("/home/sion/Documents/Portofoliu/face_recognition_svm/data/raw/" + name).mkdirs();
+                new File("./data/raw/" + name).mkdirs();
             }
         }
         if(event.getSource() == takePictureButton){
@@ -227,7 +227,7 @@ public class LearningSetPanel extends Panel implements Runnable, ActionListener{
         try{
             if(pictureCount >= 500) return;
             name = nameTextField.getText();
-            path = "/home/sion/Documents/Portofoliu/face_recognition_svm/data/raw/" + name + "/" + name + "_" + pictureCount + ".jpg";
+            path = "./data/raw/" + name + "/" + name + "_" + pictureCount + ".jpg";
             ImageIO.write(rescale(matToBufferedImage(frame)), "jpg", new File(path));
             savedImages.add(path);
             currentIndex = savedImages.size() - 1;
