@@ -181,16 +181,17 @@ public class CameraPanel extends Panel implements Runnable{
         Mat display = frame.clone();
         synchronized(this){
             if(detections.size() > 0 && detections != null){
-                Object[] det = detections.get(0);
-                int x = (int)det[0];
-                int y = (int)det[1];
-                double[] hog = (double[])det[4];
-                Imgproc.rectangle(display, new org.opencv.core.Point(x, y), new org.opencv.core.Point(x+100, y+100), new Scalar(96,16,8), 1);
-                if(recognizer != null){
-                    for(SVMClassifier clf : recognizer){
-                        if(clf.predict(hog) == 1){
-                            Imgproc.putText(display, clf.personName, new org.opencv.core.Point(x+1, y+95), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(96,16,8), 1);
-                            break;
+                for(Object[] det : detections){
+                    int x = (int)det[0];
+                    int y = (int)det[1];
+                    double[] hog = (double[])det[4];
+                    Imgproc.rectangle(display, new org.opencv.core.Point(x, y), new org.opencv.core.Point(x + 100, y + 100), new Scalar(8,16,96), 1);
+                    if(recognizer != null){
+                        for(SVMClassifier clf : recognizer){
+                            if(clf.predict(hog) == 1){
+                                Imgproc.putText(display, clf.personName, new org.opencv.core.Point(x+1, y+95), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(8,16,96), 1);
+                                break;
+                            }
                         }
                     }
                 }

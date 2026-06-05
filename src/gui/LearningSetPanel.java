@@ -228,7 +228,9 @@ public class LearningSetPanel extends Panel implements Runnable, ActionListener{
             if(pictureCount >= 500) return;
             name = nameTextField.getText();
             path = "./data/raw/" + name + "/" + name + "_" + pictureCount + ".jpg";
-            ImageIO.write(rescale(matToBufferedImage(frame)), "jpg", new File(path));
+            int x = (frame.width() - 128) / 2;
+            int y = (frame.height() - 128) / 2;
+            ImageIO.write(matToBufferedImage(new Mat(frame, new Rect(x, y, 128, 128))), "jpg", new File(path));
             savedImages.add(path);
             currentIndex = savedImages.size() - 1;
             pictureCount++;
@@ -269,6 +271,9 @@ public class LearningSetPanel extends Panel implements Runnable, ActionListener{
 
     public void paint(Graphics g){
         if(frame != null && !frame.empty()){
+            int x = (frame.width() - 128) / 2;
+            int y = (frame.height() - 128) / 2;
+            Imgproc.rectangle(frame, new org.opencv.core.Point(x, y), new org.opencv.core.Point(x + 128, y + 128), new Scalar(8, 16, 96), 1); 
             g.drawImage(matToImage(frame), 30, 60, 500, 400, this);
         }
         if(previewImage != null){
@@ -308,23 +313,6 @@ public class LearningSetPanel extends Panel implements Runnable, ActionListener{
         }
         img.setRGB(0, 0, width, height, pixels, 0, width);
         return img;
-    }
-
-    private BufferedImage rescale(BufferedImage image){
-        int width = image.getWidth();
-        int height = image.getHeight();
-        double scaleX = width / 128.0;
-        double scaleY = height / 128.0;
-        int srcX, srcY;
-        BufferedImage newImage = new BufferedImage(128, 128, BufferedImage.TYPE_INT_RGB);
-        for(int i = 0; i < 128; i++){
-            for(int j = 0; j < 128; j++){
-                srcX = (int)(j * scaleX);
-                srcY = (int)(i * scaleY);
-                newImage.setRGB(j, i, image.getRGB(srcX, srcY));
-            }
-        }
-        return newImage;
     }
 
     public void startCamera(){
